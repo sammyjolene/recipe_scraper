@@ -31,24 +31,54 @@ def scraper(url):
     recipe_json=element.get_text()
 
     #method used to parse a valid JSON string and convert it into a Python Dictionary
-    json.loads(recipe_json)
+    new_dictionary = json.loads(recipe_json)
 
-    #Running into a key error here sometimes -- will resolve with two paths for scraping-- one that continues if there is not a key error -- 
+    #Running into a key error here sometimes -- will resolve with two paths for scraping One that continues if there is not a key error -- 
 
-    #pulling the values of the key recipeIngredient to Display ingredients as a list
-    ingredients = json.loads(recipe_json)['recipeIngredient']
+    if len(new_dictionary) == 2:
+         #creates a new variable with method used to parse a valid JSON string and convert it into a Python Dictionary
+        new_dictionary = json.loads(recipe_json) 
+        # keysList = list(new_dictionary.keys())
+        graph_dictionary = new_dictionary['@graph']
+        recipe_dictionary = next((item for item in graph_dictionary if item["@type"] == "Recipe"), None)
+        # new_keysList = list(recipe_dictionary.keys())
 
-    servings = json.loads(recipe_json)['recipeYield']
+        #pulling the values of the key recipeIngredient to Display ingredients as a list
+        ingredients = recipe_dictionary['recipeIngredient']     
 
-    instructions = json.loads(recipe_json)['recipeInstructions']
+        servings = recipe_dictionary['recipeYield']
 
-    recipe_name = json.loads(recipe_json)['name']
 
-    recipe_description = json.loads(recipe_json)['description']
+        steps = recipe_dictionary['recipeInstructions']
 
-    return ingredients, servings, instructions, recipe_name, recipe_description
+        instructions = []
+        for item in steps:
+            if item["@type"] == "HowToStep":
+                instructions.append(item['text'])
 
+        recipe_name = recipe_dictionary['name']
+
+        recipe_description = recipe_dictionary['description']
+
+        return ingredients, servings, instructions, recipe_name, recipe_description
+    else:
+        #pulling the values of the key recipeIngredient to Display ingredients as a list
+        ingredients = json.loads(recipe_json)['recipeIngredient']
+
+        servings = json.loads(recipe_json)['recipeYield']
+
+        instructions = json.loads(recipe_json)['recipeInstructions']
+
+        recipe_name = json.loads(recipe_json)['name']
+
+        recipe_description = json.loads(recipe_json)['description']
+
+        return ingredients, servings, instructions, recipe_name, recipe_description
+    
+#this URL flows through the second part of the if statement -- the else statment
 ingredients, servings, instructions, recipe_name, recipe_description = scraper("https://www.inspiredtaste.net/15938/easy-and-smooth-hummus-recipe")
+#this URL flows through the first part of the if statment
+#ingredients, servings, instructions, recipe_name, recipe_description = scraper('https://pinchofyum.com/crunchy-roll-bowls')
 
 print(recipe_name)
 print(recipe_description)
